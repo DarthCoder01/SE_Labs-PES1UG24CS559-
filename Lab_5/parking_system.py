@@ -15,11 +15,13 @@ PERMIT_VALIDITY_DAYS = 180
 # Shared in-memory permit store: {plate: {"zone", "permit", "expiry"}}
 permits = {}
 
+
 def _clean_plate(vehicle_plate):
     """Return a normalised plate, or raise ValueError if it is invalid."""
     if not isinstance(vehicle_plate, str) or not vehicle_plate.strip():
         raise ValueError("Vehicle plate must be a non-empty string")
     return vehicle_plate.strip().upper()
+
 
 def register_permit(vehicle_plate, zone_id, zone_records=None):
     """Issue a permit and return its number.
@@ -43,11 +45,13 @@ def register_permit(vehicle_plate, zone_id, zone_records=None):
     zone_records.append((plate, zone_id))
     return permit_no
 
+
 def revoke_permit(vehicle_plate):
     """Remove a permit. Return True if one existed, else False."""
     if not isinstance(vehicle_plate, str):
         return False
     return permits.pop(vehicle_plate.strip().upper(), None) is not None
+
 
 def is_expired(vehicle_plate):
     """Return True if the plate has no valid, in-date permit."""
@@ -60,6 +64,7 @@ def is_expired(vehicle_plate):
         return True  # unreadable expiry: fail closed, treat as expired
     return expiry < date.today()
 
+
 def scan_zone(zone_id, plates_seen):
     """Return the plates that should not be parked in zone_id."""
     return [
@@ -69,6 +74,7 @@ def scan_zone(zone_id, plates_seen):
         or permits[plate]["zone"] != zone_id
         or is_expired(plate)
     ]
+
 
 def load_permit_database(file="permits.json"):
     """Load permits from a JSON file; start empty if unreadable."""
@@ -83,10 +89,12 @@ def load_permit_database(file="permits.json"):
     permits.clear()
     permits.update(loaded)
 
+
 def save_permit_database(file="permits.json"):
     """Write all permits to a JSON file."""
     with open(file, "w", encoding="utf-8") as handle:
         json.dump(permits, handle, indent=2)
+
 
 def set_expiry(vehicle_plate, date_text):
     """Set a permit's expiry; date_text must be YYYY-MM-DD."""
@@ -94,6 +102,7 @@ def set_expiry(vehicle_plate, date_text):
         raise KeyError(f"No permit for plate {vehicle_plate!r}")
     datetime.strptime(date_text, DATE_FORMAT)  # raises ValueError if bad
     permits[vehicle_plate]["expiry"] = date_text
+
 
 def main():
     """Run the demo."""
@@ -121,4 +130,6 @@ def main():
     save_permit_database()
     print("Permits on file:", len(permits))
 
-main()
+
+if __name__ == "__main__":
+    main()
